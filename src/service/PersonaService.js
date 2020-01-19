@@ -6,4 +6,8 @@ export class PersonaService {
     getAll(){
         return axios.get(this.baseUrl + "all").then(res => res.data);
     }
+
+    save(persona) {
+        return axios.post(this.baseUrl + "save", persona).then(res => res.data);
+    }
 }
