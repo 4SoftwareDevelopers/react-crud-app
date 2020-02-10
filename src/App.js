@@ -26,6 +26,9 @@ export default class App extends Component{
         apellido: null,
         direccion: null,
         telefono : null
+      },
+      selectedPersona : {
+
       }
     };
     this.items = [
@@ -37,16 +40,17 @@ export default class App extends Component{
       {
         label : 'Editar',
         icon  : 'pi pi-fw pi-pencil',
-        command : () => {alert('Edited!')}
+        command : () => {this.showEditDialog()}
       },
       {
         label : 'Eliminar',
         icon  : 'pi pi-fw pi-trash',
-        command : () => {alert('Deleted!')}
+        command : () => {this.delete()}
       }
     ];
     this.personaService = new PersonaService();
     this.save = this.save.bind(this);
+    this.delete = this.delete.bind(this);
     this.footer = (
       <div>
         <Button label="Guardar" icon="pi pi-check" onClick={this.save} />
@@ -70,9 +74,18 @@ export default class App extends Component{
           telefono : null
         }
       });
-      this.growl.show({severity: 'success', summary: 'Atención!', detail: 'Se creó el registro correctamente.'});
+      this.growl.show({severity: 'success', summary: 'Atención!', detail: 'Se guardó el registro correctamente.'});
       this.personaService.getAll().then(data => this.setState({personas: data}))
     })
+  }
+
+  delete() {
+    if(window.confirm("¿Realmente desea eliminar el registro?")) {
+      this.personaService.delete(this.state.selectedPersona.id).then(data => {
+        this.growl.show({severity: 'success', summary: 'Atención!', detail: 'Se eliminó el registro correctamente.'});
+        this.personaService.getAll().then(data => this.setState({personas: data}));
+      });
+    }
   }
 
   render(){
@@ -81,7 +94,7 @@ export default class App extends Component{
         <Menubar model={this.items}/>
         <br/>
         <Panel header="React CRUD App">
-            <DataTable value={this.state.personas}>
+            <DataTable value={this.state.personas} paginator={true} rows="4" selectionMode="single" selection={this.state.selectedPersona} onSelectionChange={e => this.setState({selectedPersona: e.value})}>
               <Column field="id" header="ID"></Column>
               <Column field="nombre" header="Nombre"></Column>
               <Column field="apellido" header="Apellido"></Column>
@@ -161,5 +174,18 @@ export default class App extends Component{
       }
     });
     document.getElementById('persona-form').reset();
+  }
+
+  showEditDialog() {
+    this.setState({
+      visible : true,
+      persona : {
+        id: this.state.selectedPersona.id,
+        nombre: this.state.selectedPersona.nombre,
+        apellido: this.state.selectedPersona.apellido,
+        direccion: this.state.selectedPersona.direccion,
+        telefono : this.state.selectedPersona.telefono
+      }
+    })
   }
 }
